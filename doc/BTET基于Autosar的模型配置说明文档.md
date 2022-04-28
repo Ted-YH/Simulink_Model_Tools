@@ -1,11 +1,16 @@
+# **本规范主要参照规范与标准**（参考MathWorks官方链接[Matlab模型兼容性](https://ww2.mathworks.cn/help/slcheck/check-model-compliance.html?s_tid=CRUX_lftna))
+- MAAB和JMAAB （[MAAB和JMAAB合规性的模型检查](https://ww2.mathworks.cn/help/slcheck/ug/model-advisor-checks-for-maab-and-jmaab-compliance.html)）
+- hisl ([用于高完整性系统建模的模型检查](https://ww2.mathworks.cn/help/slcheck/ug/model-checks-for-high-integrity-systems-modeling_hism_table_checks.html))
+- DO-178C/DO-331航空机载软件建模规范([基于DO-178C/DO-331标准的模型合规性检查](https://ww2.mathworks.cn/help/slcheck/ug/model-checks-for-do-178cdo-331-standard-compliance_bup4bx5.html))
+- 网上参照的一些Mathworks培训内容
+- By Ted.Long
+---------------------------------
 # **适用于AUTOSAR的配置选项规范**
 ---------------------------------------
   
 - [1. Solver 求解器的设定](#1-solver-求解器的设定)
 - [2. Data Import/Export 数据输入输出设定](#2-data-importexport-数据输入输出设定)
-- [3. Optimization 优化参数设定](#3-optimization-优化参数设定)
-	- [3.1. Optimization->Signals and Parameters 信号和变量优化设定](#31-optimization-signals-and-parameters-信号和变量优化设定)
-	- [3.2. Optimization->Stateflow 参数优化设定](#32-optimization-stateflow-参数优化设定)
+- [3. Math and Data Types 数学与数据类型](#3-math-and-data-types-数学与数据类型)
 - [4. Diagnostics 诊断设定](#4-diagnostics-诊断设定)
 	- [4.1. Diagnostics->Sample Time 采样时间诊断设定](#41-diagnostics-sample-time-采样时间诊断设定)
 	- [4.2. Diagnostics->Data Validity 数据有效性诊断设定](#42-diagnostics-data-validity-数据有效性诊断设定)
@@ -18,31 +23,21 @@
 - [6. Model Referencing 模型引用设定](#6-model-referencing-模型引用设定)
 - [7. Simulation Target 仿真目标设定](#7-simulation-target-仿真目标设定)
 - [8. Code Generation 代码生成设定](#8-code-generation-代码生成设定)
-	- [8.1. Code Generation->Report 代码生成报告设定](#81-code-generation-report-代码生成报告设定)
-	- [8.2. Code Generation->Comments 代码生成注释设定](#82-code-generation-comments-代码生成注释设定)
-	- [8.3. Code Generation->Symbols 代码生成符号标记设定](#83-code-generation-symbols-代码生成符号标记设定)
-	- [8.4. Code Generation->Custom Code 自定义代码设定](#84-code-generation-custom-code-自定义代码设定)
-	- [8.5. Code Generation->Interface 代码接口设定](#85-code-generation-interface-代码接口设定)
-	- [8.6. Code Generation->Code Style 代码生成风格设定](#86-code-generation-code-style-代码生成风格设定)
-	- [8.7. Code Generation->Verification 代码验证设定](#87-code-generation-verification-代码验证设定)
-	- [8.8. Code Generation->Templates 生成代码模板设定](#88-code-generation-templates-生成代码模板设定)
-	- [8.9. Code Generation->Code Placement 代码放置位置设定](#89-code-generation-code-placement-代码放置位置设定)
-	- [8.10. Code Generation->Data Type Replacement 生成代码数据类型替换设定](#810-code-generation-data-type-replacement-生成代码数据类型替换设定)
-	- [8.11. Code Generation->Memory Sections 生成代码内存块设定](#811-code-generation-memory-sections-生成代码内存块设定)
-	- [8.12. Code Generation->AUTOSAR Code Generation Options 生成适配AUTOSAR代码的配置选项](#812-code-generation-autosar-code-generation-options-生成适配autosar代码的配置选项)
-
-
----------------------------------
-- 根据hisl（高完整性系统建模）文档进行配置项优化，并将hisl相关规则进行文档链接。开始编写自动配置的脚本
-- 根据model advisor中DO-178C/DO-331（航空机载软件建模规范）相关配置项进行优化，根据JMAAB中部分规则进行配置优化，修改脚本，增加不同模型兼容性
-- 根据Mathworks培训，适配mablab2017b，确认 ZeroExternalMemoryAtStartup, ZeroInternalMemoryAtStartup,NoFixptDivByZeroProtection 选项设置，新增 ConditionallyExecuteInputs, OptimizeBlockIOStorage,BufferReuse,ExpressionFolding ,DefaultParameterBehavior (选择Inlined), BlockReduction (不能选择，需要通过死逻辑检查来规避该项),GlobalBufferReuse,BooleanDataType,EfficientFloat2IntCast 选项设置，增加代码效率，减少可调试性。  
-讲师提到数据类型转换模块，溢出设定，与建模规范 jc 0628 ,jc 0651 描述一致。 
-2019/8/28  姜世博
-
+	- [8.1. Code Generation->Optimization 代码生成优化](#81-code-generation-optimization-代码生成优化)
+	- [8.2. Code Generation->Report 代码生成报告设定](#82-code-generation-report-代码生成报告设定)
+	- [8.3. Code Generation->Comments 代码生成注释设定](#83-code-generation-comments-代码生成注释设定)
+	- [8.4. Code Generation->Symbols 代码生成符号标记设定](#84-code-generation-symbols-代码生成符号标记设定)
+	- [8.5. Code Generation->Custom Code 自定义代码设定](#85-code-generation-custom-code-自定义代码设定)
+	- [8.6. Code Generation->Interface 代码接口设定](#86-code-generation-interface-代码接口设定)
+	- [8.7. Code Generation->Code Style 代码生成风格设定](#87-code-generation-code-style-代码生成风格设定)
+	- [8.8. Code Generation->Verification 代码验证设定](#88-code-generation-verification-代码验证设定)
+	- [8.9. Code Generation->Templates 生成代码模板设定](#89-code-generation-templates-生成代码模板设定)
+	- [8.10. Code Generation->Code Placement 代码放置位置设定](#810-code-generation-code-placement-代码放置位置设定)
+	- [8.11. Code Generation->Data Type Replacement 生成代码数据类型替换设定](#811-code-generation-data-type-replacement-生成代码数据类型替换设定)
+	- [8.12. Code Generation->Memory Sections 生成代码内存块设定](#812-code-generation-memory-sections-生成代码内存块设定)
+	- [8.13. Code Generation->AUTOSAR Code Generation Options 生成适配AUTOSAR代码的配置选项](#813-code-generation-autosar-code-generation-options-生成适配autosar代码的配置选项)
 
 # 1. Solver 求解器的设定
-
-![Solver](../Picture/Solver-AUTOSAR.png)
 
 1. Simulation time: 仿真和运行的开始时间，结束时间，单位为s，根据实际情况进行设定。(可参考[hisl_0040][hisl_0040])
 2. Solver options: 求解器选项，分别选择 `Fixed-step` 和 `discrete` ，代表 生成代码需要一个固定步骤的离散求解器。(可参考[hisl_0041][hisl_0041])
@@ -54,8 +49,6 @@
 
 # 2. Data Import/Export 数据输入输出设定
 
-![Data](../Picture/Data-AUTOSAR.png)
-
 1. Input: 输入，从工作区加载数据，模型一般不需要此功能，选为 `不启用` 。(参考解释[Input][Input])
 2. Initial state: 初始状态，从工作区加载模型的初始状态，一般不用此功能，选为 `不启用` 。(参考解释[Initial state][Initial state])
 3. <font color=orange>Time</font>: 时间，在运行或仿真时把时间变量保存到工作区，一般不用此功能，选为 `不启用` 。(参考解释[Time][Time])
@@ -63,148 +56,34 @@
 5. <font color=orange>Format</font>: 格式，按照默认选择 `Dataset` 。(参考解释[Format][Format])
 6. <font color=orange>Output</font>: 输出，将输出比你昂保存到工作区，一般不用此功能，选为 `不启用` 。(参考解释[Output][Output])
 7. Final states:最终状态，将模型最终的状态记录并保存在工作区，一般不用此功能，选为 `不启用` 。(参考解释[Final states][Final states])
-8. Signal logging: 信号记录，将运行中信号记录并存至工作区，一般 `启用` 此功能以便于仿真时调试问题。(参考解释[Signal logging][Signal logging])
-9. Data stores: 数据存储，储存Simulink.SimulationData.Dataset格式的数据，勾选 `启用` 后，不影响代码生成。(参考解释[Data stores][Data stores])
+8. Signal logging: 信号记录，将运行中信号记录并存至工作区，选为 `不启用`。(参考解释[Signal logging][Signal logging])
+9. Data stores: 数据存储，储存Simulink.SimulationData.Dataset格式的数据，选为 `不启用`。(参考解释[Data stores][Data stores])
 10. Log dataset data to file: 将数据记录到MAT文件，一般 `不启用` 此功能。(参考解释[Log dataset data to file][Log dataset data to file])
 11. Singal simulation output: 仿真结果的单个输出,一般 `不启用` 此功能。(参考解释[Singal simulation output][Singal simulation output])
-12. <font color=orange>Record logged workspace data in Simulation Data Inspector:</font> 在Simulation Data Inspector中记录记录的工作区数据，模型开发及验证阶段可以 `启用` ，以便于在 仿真数据监视器 中查看数据和调试，此处不影响代码生成。(参考解释[Record logged workspace data in Simulation Data Inspector][Record logged workspace data in Simulation Data Inspector])
-13. Limit data points: 限制到Matlab工作区导出的数据点，一般按照默认 `启用` 此功能，可以减少电脑不必要的内存占用，此选项不影响代码生成。(参考解释[Limit data points][Limit data points])
+12. <font color=orange>Record logged workspace data in Simulation Data Inspector:</font> 在Simulation Data Inspector中记录记录的工作区数据，模型开发及验证阶段可以 `启用` ，以便于在 仿真数据监视器 中查看数据和调试，选为 `不启用`，此处不影响代码生成。(参考解释[Record logged workspace data in Simulation Data Inspector][Record logged workspace data in Simulation Data Inspector])
+13. Limit data points: 限制到Matlab工作区导出的数据点，选为 `不启用`，此选项不影响代码生成。(参考解释[Limit data points][Limit data points])
 
-# 3. Optimization 优化参数设定
-
-![Optimization](../Picture/Optimization-AUTOSAR.png)
+# 3. Math and Data Types 数学与数据类型
 
 1. <font color=orange>Default for underspecified data type:</font> 没有指定的默认数据类型，共有 `double` 和 `signal` 可选，此设置影响代码生成，需要根据处理器的支持与否来选择，此处推荐选择 `single` 以便节省空间。(参考解释[Default for underspecified data type][Default for underspecified data type])
-
-<center>
-
-![3_0_1_001.jpg](../Picture/3_0_1_001.jpg)
-
-</center>
-
-2. Use division for fixed-point net slope computation:使用除法对于特定的定点数的净斜率计算进行优化，此项选择`on`，需要注意的是hisl_0060规则推荐选择on。(参考解释[Use division for fixed-point net slope computation][Use division for fixed-point net slope computation]，参考规则[hisl_0060][hisl_0060])
-
-- ***疑问:选项配置没有实际影响，和官方文档参考有差别***
-
-<center>
-
-![3_0_2_001.jpg](../Picture/3_0_2_001.jpg)
-![3_0_2_002.jpg](../Picture/3_0_2_002.jpg)
-
-</center>
-
+2. Use division for fixed-point net slope computation:使用除法对于特定的定点数的净斜率计算进行优化，此项选择`on`，hisl_0060规则推荐选择on。(参考解释[Use division for fixed-point net slope computation][Use division for fixed-point net slope computation]，参考规则[hisl_0060][hisl_0060])
 3. Use floating-point multiplication to handle net slope corrections: 使用浮点乘法来处理网络斜率校正，默认 `不启用` 此项优化。(参考解释[Use floating-point multiplication to handle net slope corrections][Use floating-point multiplication to handle net slope corrections])
 4. <font color=orange>Application lifespan (days):</font> 在定时器溢出之前，模型中的模块能够运行多少天，所填数字为大于0的标量值，最大为inf，此处要求填写 `inf` 。(参考解释[Application lifespan][Application lifespan]，参考规则[hisl_0048][hisl_0048])
-
-5. 
-
-***模型中使用事件，并允许绝对时间-参考8.5.6项设置-才会有影响，否则不对生成代码产生影响***
-
-5. Optimize using the specified minimum and maximum values: 使用模型中信号和参数的指定最小值和最大值来优化生成的代码，设为 `不启用` 该优化来减少冗余代码和空间。(参考解释[Optimize using the specified minimum and maximum values][Optimize using the specified minimum and maximum values])
-6. Remove root level I/O zero initialization: ZeroExternalMemoryAtStartup 删除根级别的 I/O 赋0初始化，此项默认 `启用` 。(参考解释[Remove root level I/O zero initialization][Remove root level I/O zero initialization])
-7. Remove internal data zero initialization: ZeroInternalMemoryAtStartup 删除内部数据赋0的初始化，为了适配AutoSAR，此项选择 `不启用` 。(参考解释[Remove internal data zero initialization][Remove internal data zero initialization]，参考规则[hisl_0052][hisl_0052])
-
-- 左侧为勾选启用，右侧为勾选不启用，可以看出启用此项 不会生成中间状态变量的初始化代码，此时使用变量定义时进行初始化。
-
-<center>
-
-![3_0_8_001.jpg](../Picture/3_0_8_001.jpg)
-![3_0_8_002.jpg](../Picture/3_0_8_002.jpg)
-![3_0_8_003.jpg](../Picture/3_0_8_003.jpg)
-
-</center>
-
-8. Remove code from floating-point to integer conversions that wraps out-of-range values: 删除超出范围的浮点到整形数转换，根据会议评审，此处选择 `不启用`，需要注意的是hisl_0053规则建议选择“启用” 。(参考解释[Remove code from floating-point][Remove code from floating-point]，参考规则[hisl_0053][hisl_0053])
-
-- 左边为启用，右边为不启用，转换是否超范围在搭建模型阶段进行测试和保证，不需要生成相关保护代码。
-
-<center>
-
-![3_0_9_001.jpg](../Picture/3_0_9_001.jpg)
-
-</center>
-
-9. <font color=orange>Remove code that protects against division arithmetic exceptions:</font> NoFixptDivByZeroProtection 不生成对于除0保护的代码，此处 `不启用`，目的为生成除0保护的相关代码。(参考解释[Remove code that protects][Remove code that protects]，参考规则[hisl_0054][hisl_0054])
-
-10. Conditional input branch execution: ConditionallyExecuteInputs针对条件判断语句进行折叠优化，勾选后条件满足才会运行相应分支代码，此处 `启用`，目的为增加代码运行效率。(20190828 mathwork培训建议)
-
-11. Signal storage reuse: OptimizeBlockIOStorage 输入输出信号储存类型可复用，此处 `启用` ，目的为增加代码运行效率。(20190828 mathwork培训建议)
-
-12. <font color=orange>Block reduction:</font> BlockReduction 删除无法运行的模块代码，此处 `不启用`，即不删除模型中死逻辑的代码，通过静态检查中的死逻辑检查来覆盖此项，保证模型和代码的一致，以及不要误删预留逻辑。(20190828 mathwork培训，与讲师建议不一致)
-
-13. Implement logic signals as Boolean data (vs. double): BooleanDataType 布尔数据类型的启用与默认转换，此处 `启用` ，目的为增加代码运行效率。(20190828 mathwork培训建议)
-
-14. Remove code from floating-point to integer conversions that wraps out-of-range values: EfficientFloat2IntCast 浮点数据计算过程中整形化转换，此处 `启用` ，目的为增加代码运行效率。(20190828 mathwork培训建议)
-
-
-## 3.1. Optimization->Signals and Parameters 信号和变量优化设定
-
-![Signals and Parameters](../Picture/SignalsAndParameters-AUTOSAR.png)
-
-1. Default parameter behavior: 默认参数行为，此项选择 `Inlined` ，将数字块参数转换为生成的代码中的常量内联值，即代码不给表示数字的参数分配内存，减少全局RAM使用并提高生成代码的效率。(参考解释[Default parameter behavior][Default parameter behavior])
-2. Inline invariant signals: 不变信号量作为内联，此处勾选 `不启用` ，目的是将固定的信号量生成const类型的标定量。(参考解释[Inline invariant signals][Inline invariant signals])
-
-- 左边为不启用，右边为启用，可以发现启用内联信号量优化后有可能会将 期望保存为const类型的标定量优化没，所以不启用这项优化
-
-<center>
-
-![3_1_2_001.jpg](../Picture/3_1_2_001.jpg)
-![3_1_2_002.jpg](../Picture/3_1_2_002.jpg)
-
-</center>
-
-3. Use memcpy for vector assignment: 使用memcpy进行矢量的分配，此处勾选 `启用` 优化，目的是对于一些特定的for循环，会使用memcpy进行替换。(参考解释[Use memcpy for vector assignment][Use memcpy for vector assignment])
-4. Memcpy threshold (bytes): Memcpy阈值(字节)，在生成的代码中指定替换成memcpy的最小数组大小（以字节为单位），此处使用默认值 `64` 即可。(参考解释[Memcpy threshold][Memcpy threshold])
-5. Pack Boolean data into bitfields: 将布尔数据打包成位域，此处按照默认 `不启用` 这条优化，如果启用，则会将布尔变量作为位段方式进行储存，节省ROM，但是运行时效率会变低。(参考解释[Pack Boolean data into bitfields][Pack Boolean data into bitfields])
-6. Loop unrolling threshold: 循环展开阈值，制定代码生成for循环的最小循环数，此处按照默认设为 `5` ，根据规则hisl_0051要求为2以上，而默认参数为5，所以决定采默认值。(参考解释[Loop unrolling threshold][Loop unrolling threshold]，参考规则[hisl_0051][hisl_0051])
-7. Maximum stack size (bytes): 堆栈上限值(字节)，此处按照默认选择即可，`Inherit from target` ，目的为根据Simulink编译器自动分配。(参考解释[Maximum stack size][Maximum stack size])
-8. Pass reusable subsystem outputs as: 设定可重用子系统通过什么输出，此处选择 `Individual arguments` ，将可重用的子系统输出作为局部变量，此选项对比Structure reference可增加运行时效率。(参考解释[Pass reusable subsystem outputs as][Pass reusable subsystem outputs as])
-
-- 左边为选择`Individual arguments`，右边为选择`Structure reference`代码对比，采用左边的方式能够减少内存并增加代码执行速度，采用右边的方式可以对重用函数输出值进行分开保存，并能够存储上次的值。
-
-<center>
-
-![3_1_8_001.jpg](../Picture/3_1_8_001.jpg)
-![3_1_8_002.jpg](../Picture/3_1_8_002.jpg)
-![3_1_8_003.jpg](../Picture/3_1_8_003.jpg)
-
-</center>
-
-9. Parameter structure: 参数结构，此处选择默认选项 `Hierarchical` ，目的是对于特定的子系统生成独立的参数结构。(参考解释[Parameter structure][Parameter structure])
-
-10. Reuse local block outputs :BufferReuse 局部输出变量可复用优化，此处 `启用` ，目的为增加代码运行效率。(20190828 mathwork培训建议)
-
-11. Eliminate superfluous local variables (expression folding): ExpressionFolding 表达式折叠，优化局部自动变量，此处 `启用` ，目的为增加代码运行效率。(20190828 mathwork培训建议)
-
-12. Default parameter behavior: DefaultParameterBehavior 默认变量的表现形式，主要针对直接填写数字的Constant模块，如果选为Tunnable 则代码生成时会把数字转为自动变量，并在程序中使用变量，若选为Inlined，则会优化为立即数，对于枚举、标定类型的constant模块没有影响，此处选 `Inlined`，目的为增加代码运行效率。(20190828 mathwork培训建议)
-
-13. Reuse global block outputs: GlobalBufferReuse 全局输出变量可复用优化，此处 `启用` ，目的为增加代码运行效率。(20190828 mathwork培训建议)
-
-## 3.2. Optimization->Stateflow 参数优化设定
-
-![Stateflow](../Picture/Stateflow-AUTOSAR.png)
-
-1. Use bitsets for storing state configuration: 使用位段来储存状态格局，此处勾选 `不启用` 该优化，若勾选该优化，虽然会节省ROM，但同时会降低运行时效率，。(参考解释[Use bitsets for storing][Use bitsets for storing])
-2. Use bitsets for storing Boolean data: 使用位段储存布尔变量，此处 `不启用` 这项优化，这样能够更快的读取及运算布尔变量，若启用优化则会减少内存使用但是需要更多的指令来访问布尔变量。(参考解释[Use bitsets for storing Boolean data][Use bitsets for storing Boolean data])
-3. Base storage type for automatically created enumerations: 自动创建枚举类型的储存类型，此处按照默认值 `Native Integers` 设定即可，目的为根据目标自动选择的整形类型。(参考解释[Base storage type for automatically created enumerations][Base storage type for automatically created enumerations])
+5. Implement logic signals as Boolean data (vs. double): BooleanDataType 布尔数据类型的启用与默认转换，此处 `启用` ，目的为增加代码运行效率。
 
 # 4. Diagnostics 诊断设定
-
-![Diagnostics](../Picture/Diagnostics-AUTOSAR.png)
 
 1. Algebraic loop: 代数环检测，设为 `error` 。(参考解释[Algebraic loop][Algebraic loop]，参考规则[hisl_0043][hisl_0043])
 2. Minimize algebraic loop: 最小化代数环，设为 `error` 。(参考解释[Minimize algebraic loop][Minimize algebraic loop]，参考规则[hisl_0043][hisl_0043])
 3. Block priority violation: 模块优先级违规检测，设为 `error` 。(参考解释[Block priority violation][Block priority violation]，参考规则[hisl_0043][hisl_0043])
 4. Min step size violation: 最小步长违规检测，设为 `warning` 。(参考解释[Min step size violation][Min step size violation])
 5. Consecutive zero-crossings violation: 连续过0违规检测，设为 `error` 。(参考解释[Consecutive zero-crossings violation][Consecutive zero-crossings violation])
-6. Automatic solver parameter selection: 自动求解器参数选择，此处设为 `error`。(参考解释[Automatic solver parameter selection][Automatic solver parameter selection]，参考规则[hisl_0043][hisl_0043])
+6. Automatic solver parameter selection: 自动求解器参数选择，此处设为 `warning`。(参考解释[Automatic solver parameter selection][Automatic solver parameter selection]，参考规则[hisl_0043][hisl_0043])
 7. Extraneous discrete derivative signals: 外部导入的离散信号检测，设为 `error` 。(参考解释[Extraneous discrete derivative signals][Extraneous discrete derivative signals])
 8. State name clash: 状态名冲突，设为 `warning` 。(参考解释[State name clash][State name clash]，参考规则[hisl_0043][hisl_0043])
 9. SimState interface checksum mismatch: SimState接口校验和不匹配，设为 `warning` 。(参考解释[SimState interface checksum mismatch][SimState interface checksum mismatch])
 
 ## 4.1. Diagnostics->Sample Time 采样时间诊断设定
-
-![SampleTime](../Picture/SampleTime-AUTOSAR.png)
 
 1. Source block specifies -1 sample time: 信号源模块设定了-1的采样时间，设为 `error` 。(参考解释[Source block specifies -1 sample time][Source block specifies -1 sample time]，参考规则[hisl_0044][hisl_0044])
 2. Multitask rate transition: 多任务速率转换，设为 `error` 。(参考解释[Multitask rate transition][Multitask rate transition]，参考规则[hisl_0044][hisl_0044])
@@ -217,21 +96,19 @@
 
 ## 4.2. Diagnostics->Data Validity 数据有效性诊断设定
 
-![DataValidity](../Picture/DataValidity-AUTOSAR.png)
-
 1. Signal resolution: 信号分辨率，此处按照默认设置 `Explicit only` ，目的为不执行隐式信号分辨率，仅显式指定信号分辨率。(参考解释[Signal resolution][Signal resolution])
 2. Wrap on overflow: 封装溢出，设置为 `error` 。(参考解释[Wrap on overflow][Wrap on overflow])
 3. Division by singular matrix: 奇异矩阵除法，选择 `error` ，在model adviser里勾选 Check diagnostic settings ignored during accelerated model reference simulation也可以进行此项检查。(参考解释[Division by singular matrix][Division by singular matrix])
 4. Saturate on overflow: 饱和溢出，此处设置默认值 `error` 。(参考解释[Saturate on overflow][Saturate on overflow])
-5. Underspecified data types: 未指定的数据类型，此处按照默认设置 `error` 。(参考解释[Underspecified data types][Underspecified data types])
+5. Underspecified data types: 未指定的数据类型，此处暂时设置成 `Warning` 。(参考解释[Underspecified data types][Underspecified data types])
 6. Inf or NaN block output: Inf或NaN块输出，此处设置 `error` 。(参考解释[Inf or NaN block output][Inf or NaN block output])
 7. Simulation range checking: 仿真范围检查，此处设置 `error` 。(参考规则[Simulation range checking][Simulation range checking])
 8. "rt" prefix for identifiers: 标识符rt作为前缀，按照默认设置 `error` 。(参考解释["rt" prefix for identifiers]["rt" prefix for identifiers])
 9. Detect downcast: 损失型的强制转换检查，设为 `error` 。(参考解释[Detect downcast][Detect downcast]，参考规则[hisl_0302][hisl_0302])
 10. Detect overflow: 向上溢出检测，设为 `error` 。(参考解释[Detect overflow][Detect overflow]，参考规则[hisl_0302][hisl_0302])
 11. Detect underflow: 检测向下溢出，设为 `error` 。(参考解释[Detect underflow][Detect underflow]，参考规则[hisl_0302][hisl_0302])
-12. Detect precision loss: 检测精度损失，设为 `error` 。(参考解释[Detect precision loss][Detect precision loss]，参考规则[hisl_0302][hisl_0302])
-13. Detect loss of tunability: 可调性丢失检测，设为 `error` 。(参考解释[Detect loss of tunability][Detect loss of tunability])
+12. Detect precision loss: 检测精度损失，暂时设为 `Warning`，但是注意hisl_0302要求设为`error` 。(参考解释[Detect precision loss][Detect precision loss]，参考规则[hisl_0302][hisl_0302])
+13. Detect loss of tunability: 可调性丢失检测，暂时设为 `Warning` 。(参考解释[Detect loss of tunability][Detect loss of tunability])
 14. Detect read before write: 在写入之前检测读取，按照默认设置 `Enable all as errors` ，仅检测局部变量。(参考解释[Detect read before write][Detect read before write])
 15. Multitask data store: 多任务数据存储，按照默认设为 `error` 。(参考解释[Multitask data store][Multitask data store])
 16. Detect write after read: 读取后检测写入，此处按照默认设置 `Enable all as errors` 。(参考解释[Detect write after read][Detect write after read])
@@ -239,8 +116,6 @@
 18. Detect write after write: 写入之后检测写入，此处按照默认设置 `Enable all as errors` 。(参考解释[Detect write after write][Detect write after write])
 
 ## 4.3. Diagnostics->Type Conversiion 类型转换诊断设定
-
-![TypeConversion](../Picture/TypeConversion-AUTOSAR.png)
 
 1. Unnecessary type conversions: 不必要的类型转换，设置 `warning` 。(参考解释[Unnecessary type conversions][Unnecessary type conversions])
 2. Vector/matrix block input conversion: 矢量/矩阵块输入转换，设为 `error` 。(参考解释[Vector/matrix block input conversion][Vector/matrix block input conversion]，参考规则[hisl_0309][hisl_0309])
@@ -251,9 +126,7 @@
 
 ## 4.4. Diagnostics->Connectivity 连接诊断设定
 
-![Connectivity](../Picture/Connectivity-AUTOSAR.png)
-
-1. Signal label mismatch: 信号标签不匹配，设为 `error` 。(参考解释[Signal label mismatch][Signal label mismatch]，参考规则[hisl_0306][hisl_0306])
+1. Signal label mismatch: 信号标签不匹配，暂时设为 `Warning`，但是注意hisl_0306要求设为`error`。(参考解释[Signal label mismatch][Signal label mismatch]，参考规则[hisl_0306][hisl_0306])
 2. Unconnected block input ports: 未连接的输入端口，设为 `error` 。(参考解释[Unconnected block input ports][Unconnected block input ports]，参考规则[hisl_0306][hisl_0306])
 3. Unconnected block output ports: 未连接的输出端口，设为 `error` 。(参考解释[Unconnected block output ports][Unconnected block output ports]，参考规则[hisl_0306][hisl_0306])
 4. Unconnected line: 包含未连接的行或不匹配的Goto、From块，设为 `error` 。(参考解释[Unconnected line][Unconnected line]，参考规则[hisl_0306][hisl_0306])
@@ -267,15 +140,11 @@
 
 ## 4.5. Diagnostics->Compatibility 互换性诊断设定
 
-![Compatibility](../Picture/Compatibility-AUTOSAR.png)
-
 1. S-function upgrades needed: 需要S函数升级，设为 `error` 。(参考解释[S-function upgrades needed][S-function upgrades needed]，参考规则[hisl_0301][hisl_0301])
 2. Block behavior depends on frame status of signal: 模块行为由信号帧决定，按照默认设为 `error` 。(参考解释[Block behavior depends][Block behavior depends])
 3. SimState object from earlier release: 使用了早期版本的SimState，按照默认设为 `error` 。(参考解释[SimState object from earlier release][SimState object from earlier release])
 
 ## 4.6. Diagnostics->Model Referencing 模型引用诊断设定
-
-![ModelReferencing](../Picture/ModelReferencing-AUTOSAR.png)
 
 1. Model block version mismatch: 模块版本不匹配，设为 `error` 。(参考解释[Model block version mismatch][Model block version mismatch]，参考规则[hisl_0310][hisl_0310])
 2. Port and parameter mismatch: 端口参数比匹配，设为 `error` 。(参考解释[Port and parameter mismatch][Port and parameter mismatch]，参考规则[hisl_0310][hisl_0310])
@@ -283,8 +152,6 @@
 4. Unsupported data logging: 不支持的数据记录，设为 `error` 。(参考解释[Unsupported data logging][Unsupported data logging]，参考规则[hisl_0310][hisl_0310])
 
 ## 4.7. Diagnostics->Stateflow 诊断设定
-
-![Stateflow1](../Picture/Stateflow1-AUTOSAR.png)
 
 1. Unused data, events, messages, and functions: 未使用的数据，事件，消息和函数。按照默认设为 `warning` 。(参考解释[Unused data, events, messages, and functions][Unused data, events, messages, and functions])
 2. Unexpected backtracking: 非预期的回溯，设为 `error` 。(参考解释[Unexpected backtracking][Unexpected backtracking]，参考规则[hisl_0311][hisl_0311])
@@ -302,8 +169,6 @@
 
 # 5. Hardware Implementation 执行硬件设定
 
-![HardwareImplementation](../Picture/HardwareImplementation-AUTOSAR.png)
-
 - 根据实际硬件进行选择，举例: Hardware board->`none`, Device vendor->`Infineon`, Device Type->`TriCore`
 - Largest atomic size->integer: 最小整数，根据硬件进行选择，举例 `Char`。
 - Largest atomic size: floating-point: 最小浮点，举例 `Float` 。
@@ -313,8 +178,6 @@
 
 # 6. Model Referencing 模型引用设定
 
-![ModelReferencing1](../Picture/ModelReferencing1-AUTOSAR.png)
-
 1. Rebuild: 重建的方法，选择 `If any changes detected` 。(参考解释[Rebuild][Rebuild]，参考规则[hisl_0037][hisl_0037])
 2. Enable parallel model reference builds: 允许并行模型引用构建，按照默认设置 `不启用` 。(参考解释[Enable parallel model reference builds][Enable parallel model reference builds])
 3. MATLAB worker initialization for builds: 并行编译初始化，按照默认设为 `none` 。(参考解释[MATLAB worker initialization for builds][MATLAB worker initialization for builds])
@@ -322,17 +185,14 @@
 5. Total number of instances allowed per top model: 在另一个模型中可以发生多少对此模型的引用，按照默认设置为 `Multiple` 。(参考解释[Total number of instances allowed per top model][Total number of instances allowed per top model])
 6. Propagate sizes of variable-size signals: 可变大小的信号传播，默认选择 `Infer from blocks in model` 。(参考解释[Propagate sizes of variable-size signals][Propagate sizes of variable-size signals])
 7. Minimize algebraic loop occurrences: 允许最小代数环发生，此处 `不启用` 。(参考解释[Minimize algebraic loop occurrences][Minimize algebraic loop occurrences]，参考规则[hisl_0037][hisl_0037])
-8. Propagate all signal labels out of the model: 所有信号标签传出模型，按照默认 `启用` 。(参考解释[Propagate all signal labels out of the model][Propagate all signal labels out of the model])
+8. Propagate all signal labels out of the model: 所有信号标签传出模型，选择 `不启用` 。(参考解释[Propagate all signal labels out of the model][Propagate all signal labels out of the model])
 9. <font color=orange>Pass fixed-size scalar root inputs by value for code generation:</font> 引用此模型的模型 是否通过值 将其标量输入 传递给该模型，此项 `启用`，使用值作为输入值的 入口传参，需要注意，本条设置在hisl规则中建议不启用，具体可参考规则，下图是代码生成的对比。(参考解释[Pass fixed-size scalar][Pass fixed-size scalar]，参考规则[hisl_0037][hisl_0037])
-
-![6_9_001.jpg](../Picture/6_9_001.jpg)
-![6_9_002.jpg](../Picture/6_9_002.jpg)
 
 # 7. Simulation Target 仿真目标设定
 
-![SimulationTarget](../Picture/SimulationTarget-AUTOSAR.png)
-
-- <font color=orange>Parse custom code symbols:</font> 解析自定义代码符号，此项根据实际需要，如果模型有引用C源文件里的变量或函数，需要启用此项，本示例为 `不启用` 。(参考解释[Parse custom code symbols][Parse custom code symbols])
+1.<font color=orange>Parse custom code symbols:</font> 解析自定义代码符号，此项根据实际需要，如果模型有引用C源文件里的变量或函数，需要启用此项，本示例为 `不启用` 。(参考解释[Parse custom code symbols][Parse custom code symbols])
+2. Conditional input branch execution: ConditionallyExecuteInputs针对条件判断语句进行折叠优化，勾选后条件满足才会运行相应分支代码，此处 `启用`，目的为增加代码运行效率。
+3. <font color=orange>Block reduction:</font> BlockReduction 删除无法运行的模块代码，可以选择 `不启用`，即不删除模型中死逻辑的代码，通过静态检查中的死逻辑检查来覆盖此项，保证模型和代码的一致，以及不要误删预留逻辑。经过考虑此处选择了`启用`。
 
 # 8. Code Generation 代码生成设定
 
@@ -347,18 +207,30 @@
 7. Prioritized objectives: 生成代码的优先目标，按照默认设置 `Unspecified` ，若此处进行了设置 例如设置了ROM Efficiency，则仅在生成代码的开头注释部分增加相应的描述，并不会对实际生成的代码产生影响。(参考解释[Prioritized objectives][Prioritized objectives])
 8. <font color=orange>Check model before generating code:</font> 生成代码前检查模型，选择 `proceed with warnings` ，显示警告信息。(参考解释[Check model before generating code][Check model before generating code])
 
-## 8.1. Code Generation->Report 代码生成报告设定
+## 8.1. Code Generation->Optimization 代码生成优化
+1. Optimize using the specified minimum and maximum values: 使用模型中信号和参数的指定最小值和最大值来优化生成的代码，设为 `不启用` 该优化来减少冗余代码和空间。(参考解释[Optimize using the specified minimum and maximum values][Optimize using the specified minimum and maximum values])
+2. Remove root level I/O zero initialization: ZeroExternalMemoryAtStartup 删除根级别的 I/O 赋0初始化，此项默认 `启用` 。(参考解释[Remove root level I/O zero initialization][Remove root level I/O zero initialization])
+3. Remove internal data zero initialization: ZeroInternalMemoryAtStartup 删除内部数据赋0的初始化，为了适配AutoSAR，此项选择 `不启用` 。(参考解释[Remove internal data zero initialization][Remove internal data zero initialization]，参考规则[hisl_0052][hisl_0052])
+4. Remove code from floating-point to integer conversions that wraps out-of-range values: 删除超出范围的浮点到整形数转换，此处选择 `启用`，hisl_0053规则建议选择“启用” 。(参考解释[Remove code from floating-point][Remove code from floating-point]，参考规则[hisl_0053][hisl_0053])
+5. <font color=orange>Remove code that protects against division arithmetic exceptions:</font> NoFixptDivByZeroProtection 不生成对于除0保护的代码，此处 `不启用`，目的为生成除0保护的相关代码。(参考解释[Remove code that protects][Remove code that protects]，参考规则[hisl_0054][hisl_0054])
+6. Signal storage reuse: OptimizeBlockIOStorage 输入输出信号储存类型可复用，此处 `启用` ，目的为增加代码运行效率。
+7. Remove code from floating-point to integer conversions that wraps out-of-range values: EfficientFloat2IntCast 浮点数据计算过程中整形化转换，此处 `启用` ，目的为增加代码运行效率。
+8. Default parameter behavior: 默认参数行为，此项选择 `Inlined` ，将数字块参数转换为生成的代码中的常量内联值，即代码不给表示数字的参数分配内存，减少全局RAM使用并提高生成代码的效率。(参考解释[Default parameter behavior][Default parameter behavior])
+9. Inline invariant signals: 不变信号量作为内联，此处勾选 `不启用` ，目的是将固定的信号量生成const类型的标定量。(参考解释[Inline invariant signals][Inline invariant signals])
+10. Memcpy threshold (bytes): Memcpy阈值(字节)，在生成的代码中指定替换成memcpy的最小数组大小（以字节为单位），此处使用默认值 `64` 即可。(参考解释[Memcpy threshold][Memcpy threshold])
+11. Loop unrolling threshold: 循环展开阈值，制定代码生成for循环的最小循环数，此处按照默认设为 `5` ，根据规则hisl_0051要求为2以上，而默认参数为5，所以决定采默认值。(参考解释[Loop unrolling threshold][Loop unrolling threshold]，参考规则[hisl_0051][hisl_0051])
+12. Maximum stack size (bytes): 堆栈上限值(字节)，此处按照默认选择即可，`Inherit from target` ，目的为根据Simulink编译器自动分配。(参考解释[Maximum stack size][Maximum stack size])
+13. Pass reusable subsystem outputs as: 设定可重用子系统通过什么输出，此处选择 `Individual arguments` ，将可重用的子系统输出作为局部变量，此选项对比Structure reference可增加运行时效率。(参考解释[Pass reusable subsystem outputs as][Pass reusable subsystem outputs as])
+14. Base storage type for automatically created enumerations: 自动创建枚举类型的储存类型，此处按照默认值 `Native Integers` 设定即可，目的为根据目标自动选择的整形类型。(参考解释[Base storage type for automatically created enumerations][Base storage type for automatically created enumerations])。
 
-![Report](../Picture/Report-AUTOSAR.png)
+## 8.2. Code Generation->Report 代码生成报告设定
 
 1. Create code generation report: 创建代码生成报告，选择 `启用`。(参考解释[Create code generation report][Create code generation report])
 2. Open report automatically: 自动打开生成的报告，选择 `启用`。(参考解释[Open report automatically][Open report automatically])
 3. Generate model Web view: 生成模型web视图，默认 `不启用` 。(参考解释[Generate model Web view][Generate model Web view])
 4. Static code metrics: 代码生成报告中包含静态代码，选择 `启用` 。(参考解释[Static code metrics][Static code metrics])
 
-## 8.2. Code Generation->Comments 代码生成注释设定
-
-![Comments](../Picture/Comments-AUTOSAR.png)
+## 8.3. Code Generation->Comments 代码生成注释设定
 
 1. Include comments: 生成代码包含注释，选择 `启用` 。(参考规则[hisl_0038][hisl_0038])
 2. Simulink block / Stateflow object comments: 插入自动生成的描述模块代码的注释，注释在生成的文件中的代码之前，选择 `启用` 。(参考规则[hisl_0038][hisl_0038])
@@ -371,11 +243,9 @@
 9. Simulink data object descriptions: 生成代码中插入Simulink数据对象 Description 栏目中描述的注释，按照默认 `启用` 。(参考解释[Simulink data object descriptions][Simulink data object descriptions])
 10. Requirements in block comments: 在生成代码中插入模块链接的需求，根据会议评审此项选择 `不启用` ，需要注意hisl_0038规则推荐为“启用”。(参考解释[Requirements in block comments][Requirements in block comments]，参考规则[hisl_0038][hisl_0038])
 11. Custom comments (MPT objects only): 针对模块打包工具MPT的自定义注释，按照默认 `不启用` 。(参考解释[Custom comments (MPT objects only)][Custom comments (MPT objects only)])
-12. MATLAB function help text: 对于MATLAB函数进行帮助文档注释，按照默认 `启用` 。(参考解释[MATLAB function help text][MATLAB function help text])
+12. Matlab user comments: 针对matlab的用户注释，按照默认 `不启用` 。
 
-## 8.3. Code Generation->Symbols 代码生成符号标记设定
-
-![Symbols](../Picture/Symbols-AUTOSAR.png)
+## 8.4. Code Generation->Symbols 代码生成符号标记设定
 
 1. Global variables: 自定义生成的全局变量标识符，按照默认填写 `$R$N$M` ，代表的意义可参考本条的链接，需要注意，如果大型项目全局变量过多，有可能发生不同模块中有重名的现象，此时需要自定义此项来避免重命名。(参考说明[Global variables][Global variables])
 2. Global types: 自定义生成的全局类型表示符，按照默认填写 `$N$R$M_T` 。(参考说明[Global types][Global types])
@@ -387,7 +257,7 @@
 8. Constant macros: 常量宏名称的自定义，按照默认填写 `$R$N$M` 。(参考解释[Constant macros][Constant macros])
 9. Shared utilities: 共享应用程序名称自定义，按照默认填写 `$N$C` 。(参考解释[Shared utilities][Shared utilities])
 10. Minimum mangle length: 生成名称的最小字符数，设为 `4` 。(参考解释[Minimum mangle length][Minimum mangle length]，参考规则[hisl_0049][hisl_0049])
-11. Maximum identifier length: 生成名称的最大字符数，按照默认设为 `31`。(参考解释[Maximum identifier length][Maximum identifier length])
+11. Maximum identifier length: 生成名称的最大字符数，默认设为 `31`，本项目设为`63`。(参考解释[Maximum identifier length][Maximum identifier length])
 12. System-generated identifiers: 指定代码生成器对于$N的解释是生成较短名称还是正常的名称，选择 `Shortened`。(参考解释[System-generated identifiers][System-generated identifiers]，参考规则[hisl_0060][hisl_0060])
 13. Generate scalar inlined parameters as: 控制 在生成代码中标量的内联参数值形式，按照默认选择 `Literals` ，目的为生成标量内联参数作为数字常量。(参考解释[Generate scalar inlined parameters as][Generate scalar inlined parameters as])
 14. Signal naming: 在生成的代码中指定信号命名的规则，按照默认选择 `None` ，目的为不更改模型内信号名称，直接进行命名。(参考解释[Signal naming][Signal naming])
@@ -396,15 +266,11 @@
 17. Use the same reserved names as Simulation Target: 使用与 “Simulation Target” 中指定的名称相同的保留名称，按照默认 `不启用` 。(参考解释[Use the same reserved names as Simulation Target][Use the same reserved names as Simulation Target])
 18. Reserved names: 保留命名，在输入框中填入需要保留的名称，则在代码生成时不会生成框中填入的名称，此处根据实际需求进行填写，本示例并无此需求，所以不填写。(参考解释[Reserved names][Reserved names])
 
-## 8.4. Code Generation->Custom Code 自定义代码设定
+## 8.5. Code Generation->Custom Code 自定义代码设定
 
-![CustomCode](../Picture/CustomCode-AUTOSAR.png)
+- Use the same custom code settings as Simulation Target: 使用和Simulation Target中设置一样的自定义代码段，如果有自定义部分，此处可以启用，本项目 `启用` 。(参考解释[Use the same custom code settings][Use the same custom code settings])
 
-- Use the same custom code settings as Simulation Target: 使用和Simulation Target中设置一样的自定义代码段，如果有自定义部分，此处可以启用，本示例 `不启用` 。(参考解释[Use the same custom code settings][Use the same custom code settings])
-
-## 8.5. Code Generation->Interface 代码接口设定
-
-![Interface](../Picture/Interface-AUTOSAR.png)
+## 8.6. Code Generation->Interface 代码接口设定
 
 1. Code replacement library: 指定代码生成器在为模型生成代码时使用的代码替换库，按照默认选择为 `none` 。(参考解释[Code replacement library][Code replacement library]，参考规则[hisl_0060][hisl_0060])
 2. <font color=orange>Shared code placement:</font> 指定生成的通用函数、数据类型定义以及自定义的数据储存类型文件(rtwtypes.h)存放位置，选择 `Shared location` ，目的为最后放在slprj文件夹中。(参考解释[Shared code placement][Shared code placement]，参考规则[hisl_0060][hisl_0060])
@@ -420,12 +286,10 @@
 12. Generate C API for-> parameters: 在代码中生成parameters变量的数据交换的接口，此处按照默认设置 `不启用`。(参考解释[Generate C API for-> parameters][Generate C API for-> parameters])
 13. Generate C API for-> states: 在代码中生成states变量的数据交换的接口，此处按照默认设置 `不启用`。(参考解释[Generate C API for-> states][Generate C API for-> states])
 14. Generate C API for-> root-level I/O: 在代码中生成root-level I/O变量的数据交换的接口，此处按照默认设置 `不启用`。(参考解释[Generate C API for-> root-level I/O][Generate C API for-> root-level I/O])
-15. <font color=orange>ASAP2 interface:</font> 生成ASAP2的数据接口，此处设为`启用`。(参考解释[ASAP2 interface][ASAP2 interface])
+15. <font color=orange>ASAP2 interface:</font> 生成ASAP2的数据接口，此处设为`不启用`。(参考解释[ASAP2 interface][ASAP2 interface])
 16. External mode: 生成外部模型用到的数据交换接口，按照默认设为`不启用`。(参考解释[External mode][External mode])
 
-## 8.6. Code Generation->Code Style 代码生成风格设定
-
-![CodeStyle](../Picture/CodeStyle-AUTOSAR.png)
+## 8.7. Code Generation->Code Style 代码生成风格设定
 
 1. <font color=orange>Parentheses level:</font> 为生成的代码指定圆括号样式，选择 `Maximum (Specify precedence with parentheses)` ，尽可能的使用括号来说明运算优先级，目的为满足MISRA-C。 (参考解释[Parentheses level][Parentheses level] ，参考规则[hisl_0047][hisl_0047])
 2. <font color=orange>Preserve operand order in expression:</font> 指定是否保留表达式中操作数的顺序，选择 `启用` 。(参考解释[Preserve operand order in expression][Preserve operand order in expression]，参考规则[hisl_0047][hisl_0047])
@@ -439,9 +303,7 @@
 10. <font color=orange>Indent style:</font> 缩进风格，选择 `Allman` 。(参考解释[Indent style][Indent style])
 11. <font color=orange>Indent size:</font> 缩进大小，填写 `4` 。(参考解释[Indent size][Indent size])
 
-## 8.7. Code Generation->Verification 代码验证设定
-
-![Verification](../Picture/Verification-AUTOSAR.png)
+## 8.8. Code Generation->Verification 代码验证设定
 
 1. Measure task execution time: 在SIL和PIL模拟期间，测量任务执行时间，在代码调试阶段可以启用，生成产品级代码时不能启用，本示例选择 `不启用` 。(参考解释[Measure task execution time][Measure task execution time])
 2. Measure function execution times: 在SIL和PIL模拟期间，测量函数执行时间，在代码调试阶段可以启用，生成产品级代码时不能启用，本示例选择 `不启用` 。(参考解释[Measure function execution times][Measure function execution times])
@@ -451,15 +313,11 @@
 6. <font color=orange>Enable portable word sizes:</font> 是否使用宏定义基础变量大小的方式，针对跨平台设计生成可移植的代码，此处选择 `启用` 。(参考解释[Enable portable word sizes][Enable portable word sizes])
 7. Enable source-level debugging for SIL: 是否允许在SIL模拟期间 调试生成的源代码 ，此处 `不启用` ，目的为生成效率高的代码。(参考解释[Enable source-level debugging for SIL][Enable source-level debugging for SIL])
 
-## 8.8. Code Generation->Templates 生成代码模板设定
-
-![Templates](../Picture/Templates-AUTOSAR.png)
+## 8.9. Code Generation->Templates 生成代码模板设定
 
 - 代码生成模板文件，本示例默认按照matlab自带模板进行代码生成，如需更改模板，可参考如下链接:[Generate Custom File and Function Banners][Generate Custom File and Function Banners]，[Code Generation Template (CGT) Files][Code Generation Template (CGT) Files]
 
-## 8.9. Code Generation->Code Placement 代码放置位置设定
-
-![CodePlacement](../Picture/CodePlacement-AUTOSAR.png)
+## 8.10. Code Generation->Code Placement 代码放置位置设定
 
 1. Data definition: 全局变量定义的位置，按照默认选择 `Auto` 。(参考解释[Data definition][Data definition])
 2. Data declaration: 全局变量声明(extern, typedef, #define)的位置，按照默认选择 `Auto` 。(参考解释[Data declaration][Data declaration])
@@ -469,25 +327,19 @@
 6. Parameter tune level: 指定可调参数的持久性级别，此处按照默认填写 `10` 。(参考解释[Parameter tune level][Parameter tune level])
 7. File packaging format: 生成文件包格式，此项选择`Compact`，如果选择 “Compact (with separate data file)” 则会将所生成的代码主要放到model_data.c、model.c、model.h 这三个文件中，生成的文件意义可参考[Generated Code Modules][Generated Code Modules]。(参考解释[File packaging format][File packaging format])
 
-## 8.10. Code Generation->Data Type Replacement 生成代码数据类型替换设定
-
-![DataTypeReplacement](../Picture/DataTypeReplacement-AUTOSAR.png)
+## 8.11. Code Generation->Data Type Replacement 生成代码数据类型替换设定
 
 - Replace data type names in the generated code: 指定是否使用 用户自定义的数据类型进行 代码自动生成 的数据类型替换，选择 `不启用` 。(参考解释[Replace data type names in the generated code][Replace data type names in the generated code])
 
-## 8.11. Code Generation->Memory Sections 生成代码内存块设定
-
-![MemorySections](../Picture/MemorySections-AUTOSAR.png)
+## 8.112. Code Generation->Memory Sections 生成代码内存块设定
 
 - Package: 指定一段分配的内存进行模型函数和数据的打包，选择 `None` 。(参考解释[Package][Package])
 - 本页面其它选项选为 `Default` ，目的为不使用特殊的内存分配方式对各个模块生成出来的代码进行安置，如果需要在此处进行内存配，请参考[Control Data and Function Placement in Memory by Inserting Pragmas][Control Data and Function Placement in Memory by Inserting Pragmas]。 
 
-## 8.12. Code Generation->AUTOSAR Code Generation Options 生成适配AUTOSAR代码的配置选项
+## 8.13. Code Generation->AUTOSAR Code Generation Options 生成适配AUTOSAR代码的配置选项
 
-![AUTOSARCode](../Picture/AUTOSARCode-AUTOSAR.png)
-
-1. <font color=orange>Generate XML file for schema version:</font> 生成XML文件对应的AUTOSAR适配版本，根据实际需求进行选择，本示例选择 `4.2` 。(参考解释[Generate XML file for schema version][Generate XML file for schema version])
-2. Maximum SHORT-NAME length: 指定缩写名称最大长度，根据会议评审，填写 `64`。(参考解释[Maximum SHORT-NAME length][Maximum SHORT-NAME length])
+1. <font color=orange>Generate XML file for schema version:</font> 生成XML文件对应的AUTOSAR适配版本，根据实际需求进行选择，本项目选择 `4.3` 。(参考解释[Generate XML file for schema version][Generate XML file for schema version])
+2. Maximum SHORT-NAME length: 指定缩写名称最大长度，根据本项目情况填写 `128`。(参考解释[Maximum SHORT-NAME length][Maximum SHORT-NAME length])
 3. Use AUTOSAR compiler abstraction macros: 使用AUTOSAR定义的宏进行编译，选择 `不启用` 。(参考解释[Use AUTOSAR compiler abstraction macros][Use AUTOSAR compiler abstraction macros])
 4. Support root-level matrix I/O using one-dimensional arrays: 是否支持根层级的矩阵 I/O ，选择 `不启用`。(参考解释[Support root-level matrix I/O using one-dimensional arrays][Support root-level matrix I/O using one-dimensional arrays])
 
